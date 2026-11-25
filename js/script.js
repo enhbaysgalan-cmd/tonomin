@@ -12,6 +12,82 @@
 
     const answers = { day: null, food: [], when: null };
 
+    /* ---------------- open / YES alerts to your email ---------------- */
+    // Open the site with ?me once on your own device and your visits stop sending alerts
+    // (remembered on that device). Use ?me=off to turn alerts back on for that device.
+    const IS_LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname); // local preview: log, don't send
+    const params = new URLSearchParams(location.search);
+    try {
+        if (params.get('me') === 'off') localStorage.removeItem('tonomin-me');
+        else if (params.has('me')) localStorage.setItem('tonomin-me', '1');
+    } catch (_) {}
+    let isMe = params.has('me') && params.get('me') !== 'off';
+    try { isMe = isMe || localStorage.getItem('tonomin-me') === '1'; } catch (_) {}
+
+    // device type, model (when the phone shares it), OS, app and screen size
+    let deviceCache = null;
+    async function deviceInfo() {
+        if (deviceCache) return deviceCache;
+        const ua = navigator.userAgent;
+        const isIPad = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+        const type = isIPad || (/Android/.test(ua) && !/Mobile/.test(ua)) ? 'Tablet'
+            : /iPhone|Android|Mobile/.test(ua) ? 'Phone' : 'Computer';
+
+        let model = /iPhone/.test(ua) ? 'iPhone' : isIPad ? 'iPad' : '';
+        const androidModel = ua.match(/Android [\d.]+; (?:[a-z]{2}-[a-z]{2}; )?([^;)]+?)(?: Build|\))/i);
+        if (androidModel && androidModel[1] !== 'K') model = androidModel[1].trim();
+
+        let os = 'Unknown';
+        let m;
+        if ((m = ua.match(/(?:iPhone|CPU) OS ([\d_]+)/))) os = (isIPad ? 'iPadOS ' : 'iOS ') + m[1].replace(/_/g, '.');
+        else if ((m = ua.match(/Android ([\d.]+)/))) os = 'Android ' + m[1];
+        else if (/Windows NT/.test(ua)) os = 'Windows';
+        else if (/Mac OS X/.test(ua)) os = 'macOS';
+        else if (/Linux/.test(ua)) os = 'Linux';
+
+        // Chrome on Android hides the model in the UA string; ask for it if allowed
+        try {
+            if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+                const h = await navigator.userAgentData.getHighEntropyValues(['model', 'platformVersion']);
+                if (h.model) model = h.model;
+                if (h.platformVersion && /Android/.test(os) && os === 'Android 10') os = 'Android ' + h.platformVersion;
+            }
+        } catch (_) {}
+
+        const app = /FBAN|FBAV|FB_IAB|Messenger/.test(ua) ? 'Facebook / Messenger app'
+            : /Instagram/.test(ua) ? 'Instagram app' : /Line\//.test(ua) ? 'LINE app' : /Telegram/.test(ua) ? 'Telegram app'
+            : /EdgA?\//.test(ua) ? 'Edge' : /SamsungBrowser/.test(ua) ? 'Samsung Internet'
+            : /CriOS|Chrome/.test(ua) ? 'Chrome' : /FxiOS|Firefox/.test(ua) ? 'Firefox' : /Safari/.test(ua) ? 'Safari' : 'Browser';
+
+        deviceCache = {
+            'Device type': type,
+            'Device': model || (type === 'Computer' ? os + ' computer' : 'Unknown model'),
+            'OS': os,
+            'Opened in': app,
+            'Screen': screen.width + '×' + screen.height
+        };
+        return deviceCache;
+    }
+    const sentEvents = new Set();
+    async function alertMe(event, subject, extra) {
+        if (isMe || sentEvents.has(event)) return;
+        sentEvents.add(event);
+        const payload = Object.assign({
+            _subject: subject, _template: 'table', _captcha: 'false',
+            Event: subject
+        }, await deviceInfo(), {
+            'Came from': document.referrer || '(direct link / app)',
+            Time: new Date().toString()
+        }, extra || {});
+        if (IS_LOCAL) { console.log('[alert] ' + JSON.stringify(payload)); return; }
+        fetch(FORM_ENDPOINT, {
+            method: 'POST', keepalive: true,
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(payload)
+        }).catch(() => {});
+    }
+    alertMe('opened', 'Nomin opened the invite');
+
     /* ---------------- screens ---------------- */
     function show(id) {
         $$('.screen').forEach((s) => s.classList.remove('active'));
@@ -200,6 +276,7 @@
         if (Date.now() - lastDodgeAt < 500) return;
         const r = yesBtn.getBoundingClientRect();
         burst(r.left + r.width / 2, r.top + r.height / 2, 40);
+        alertMe('yes', 'Nomin clicked YES!', { 'Tried to press No': String(dodges) + ' times' });
         noBtn.style.display = 'none';
         if (wantMusic && playerReady && player.getPlayerState() !== YT.PlayerState.PLAYING && !muted) startMusic();
         setTimeout(() => show('screen-yay'), 500);
@@ -282,7 +359,7 @@
     // quietly email her answers to you (retries once if the network hiccups)
     let emailed = false;
     async function emailAnswers(attempt = 1) {
-        if (emailed) return;
+        if (emailed || isMe) return;
         const payload = {
             _subject: 'Nomin said YES! Concert on Nov ' + answers.day,
             _template: 'table',
@@ -294,6 +371,8 @@
             'No button dodges': String(dodges),
             'Sent at': new Date().toString()
         };
+        Object.assign(payload, await deviceInfo());
+        if (IS_LOCAL) { console.log('[answers] ' + JSON.stringify(payload)); emailed = true; return; }
         try {
             const res = await fetch(FORM_ENDPOINT, {
                 method: 'POST',
