@@ -96,61 +96,105 @@
     const yesBtn = $('#yesBtn');
     const noBtn = $('#noBtn');
     const NO_TEXTS = ['no', 'are you sure?', 'pls 🥺', 'nope', 'too slow 😜', 'think again', 'wrong button', 'hehe', 'nice try'];
-    let dodges = 0, moving = false, lastPointer = { x: -9999, y: -9999 };
+    let dodges = 0, moving = false, lastDodgeAt = 0, lastPointer = { x: -9999, y: -9999 };
+    const TRAIL_COLORS = ['#e0442b', '#e9a93b', '#2f7f7a'];
+
+    // little speed-line puffs left behind where the button was
+    function puff(x, y, w, h, dx, dy) {
+        const len = Math.hypot(dx, dy) || 1;
+        for (let i = 0; i < 7; i++) {
+            const d = document.createElement('span');
+            d.className = 'puff';
+            d.style.background = TRAIL_COLORS[i % TRAIL_COLORS.length];
+            d.style.left = x + Math.random() * w + 'px';
+            d.style.top = y + Math.random() * h + 'px';
+            document.body.appendChild(d);
+            const back = 18 + Math.random() * 26;
+            d.animate([
+                { transform: 'translate(-50%,-50%) scale(1)', opacity: 0.9 },
+                { transform: `translate(calc(-50% - ${dx / len * back}px), calc(-50% - ${dy / len * back}px)) scale(0.2)`, opacity: 0 }
+            ], { duration: 380 + Math.random() * 200, easing: 'ease-out' }).onfinish = () => d.remove();
+        }
+    }
 
     function dodge(px, py) {
         if (px === undefined) { px = lastPointer.x; py = lastPointer.y; }
         const r = noBtn.getBoundingClientRect();
         if (!noBtn.classList.contains('free')) {
-            // lift it out of the layout at its current spot, then glide away
+            // leave an invisible stand-in so YES doesn't slide into the old spot
+            const ghost = document.createElement('span');
+            ghost.className = 'no-ghost';
+            ghost.style.width = r.width + 'px';
+            ghost.style.height = r.height + 'px';
+            noBtn.after(ghost);
             noBtn.style.left = r.left + 'px';
             noBtn.style.top = r.top + 'px';
             noBtn.classList.add('free');
             void noBtn.offsetWidth;
         }
-        const vw = window.innerWidth, vh = window.innerHeight, m = 16;
+        const vw = window.innerWidth, vh = window.innerHeight, m = 12;
         const yr = yesBtn.getBoundingClientRect();
-        let best = null, bestScore = -1;
-        for (let i = 0; i < 24; i++) {
-            const x = m + Math.random() * (vw - r.width - m * 2);
-            const y = 70 + Math.random() * (vh - r.height - 70 - m);
-            const cx = x + r.width / 2, cy = y + r.height / 2;
-            const overlapsYes = x < yr.right + 10 && x + r.width > yr.left - 10 && y < yr.bottom + 10 && y + r.height > yr.top - 10;
-            if (overlapsYes) continue;
-            const fromPointer = Math.hypot(cx - px, cy - py);
-            const fromHere = Math.hypot(x - r.left, y - r.top);
-            // far from the finger/cursor, but not a crazy teleport
-            const score = Math.min(fromPointer, 420) - Math.max(0, fromHere - 380) * 0.5;
+        const cx0 = r.left + r.width / 2, cy0 = r.top + r.height / 2;
+
+        // short, quick hops (not teleports): 80–170px from where it is now
+        let best = null, bestScore = -Infinity;
+        for (let i = 0; i < 40; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            const dist = 80 + Math.random() * 90;
+            const x = Math.min(Math.max(cx0 + Math.cos(ang) * dist - r.width / 2, m), vw - r.width - m);
+            const y = Math.min(Math.max(cy0 + Math.sin(ang) * dist - r.height / 2, 70), vh - r.height - m);
+            const pad = 14;
+            if (x < yr.right + pad && x + r.width > yr.left - pad && y < yr.bottom + pad && y + r.height > yr.top - pad) continue;
+            const fromPointer = Math.hypot(x + r.width / 2 - px, y + r.height / 2 - py);
+            const moved = Math.hypot(x - r.left, y - r.top);
+            if (moved < 50) continue; // stuck against an edge: try another direction
+            const score = Math.min(fromPointer, 260) + Math.random() * 20;
             if (score > bestScore) { bestScore = score; best = { x, y }; }
         }
-        if (!best) return;
+        if (!best) best = { x: m + Math.random() * (vw - r.width - m * 2), y: 70 + Math.random() * (vh - r.height - 90) };
+
+        puff(r.left, r.top, r.width, r.height, best.x - r.left, best.y - r.top);
         noBtn.style.left = best.x + 'px';
         noBtn.style.top = best.y + 'px';
+        noBtn.classList.remove('zip');
+        void noBtn.offsetWidth;
+        noBtn.classList.add('zip');
 
         dodges++;
         noBtn.textContent = NO_TEXTS[dodges % NO_TEXTS.length];
-        const s = Math.min(1 + dodges * 0.07, 1.6);
-        yesBtn.style.setProperty('--yes-scale', s);
+        yesBtn.style.setProperty('--yes-scale', Math.min(1 + dodges * 0.06, 1.5));
+        lastDodgeAt = Date.now();
         moving = true;
-        setTimeout(() => { moving = false; }, 650);
+        setTimeout(() => { moving = false; }, 260);
     }
 
-    // mouse: drift away when the cursor gets close
+    // mouse: zip away when the cursor gets close
     document.addEventListener('pointermove', (e) => {
         lastPointer = { x: e.clientX, y: e.clientY };
         if (e.pointerType !== 'mouse' || moving) return;
         if (!$('#screen-ask').classList.contains('active')) return;
         const r = noBtn.getBoundingClientRect();
         const d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
-        if (d < 85) dodge(e.clientX, e.clientY);
+        if (d < 80) dodge(e.clientX, e.clientY);
     });
-    // touch / any press: it slips away instead of being pressed
-    noBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); dodge(e.clientX, e.clientY); });
-    noBtn.addEventListener('click', (e) => { e.preventDefault(); dodge(); });
+    // phones: cancel the touch so no "click" is generated anywhere, then hop away
+    noBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const t = e.touches[0];
+        dodge(t.clientX, t.clientY);
+    }, { passive: false });
+    noBtn.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') return; // handled by touchstart
+        e.preventDefault();
+        dodge(e.clientX, e.clientY);
+    });
+    noBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); dodge(); });
     noBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dodge(); } });
     window.addEventListener('resize', () => { if (noBtn.classList.contains('free')) dodge(); });
 
     yesBtn.addEventListener('click', (e) => {
+        // a tap meant for "no" must never count as "yes"
+        if (Date.now() - lastDodgeAt < 500) return;
         const r = yesBtn.getBoundingClientRect();
         burst(r.left + r.width / 2, r.top + r.height / 2, 40);
         noBtn.style.display = 'none';
