@@ -5,8 +5,8 @@
     const SONG_ID = 'NYNfaQb_T3w'; // The Compass - Chamaig anh
     const SONG_START = 10;         // seconds: start the song at 0:10
     // Her answers are emailed to you through FormSubmit (formsubmit.co).
-    // After activating, replace the email below with the private code FormSubmit gives you.
-    const FORM_ENDPOINT = 'https://formsubmit.co/ajax/enhbaysgalan@gmail.com';
+    // Uses FormSubmit's private code instead of the email address.
+    const FORM_ENDPOINT = 'https://formsubmit.co/ajax/4962c4c63c5e4d6ae3377f1c6c8b7717';
     const $ = (s) => document.querySelector(s);
     const $$ = (s) => Array.from(document.querySelectorAll(s));
 
