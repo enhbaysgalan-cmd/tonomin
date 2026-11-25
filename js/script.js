@@ -4,6 +4,9 @@
 
     const SONG_ID = 'NYNfaQb_T3w'; // The Compass - Chamaig anh
     const SONG_START = 10;         // seconds: start the song at 0:10
+    // Her answers are emailed to you through FormSubmit (formsubmit.co).
+    // After activating, replace the email below with the private code FormSubmit gives you.
+    const FORM_ENDPOINT = 'https://formsubmit.co/ajax/enhbaysgalan@gmail.com';
     const $ = (s) => document.querySelector(s);
     const $$ = (s) => Array.from(document.querySelectorAll(s));
 
@@ -273,7 +276,36 @@
         });
         show('screen-final');
         setTimeout(() => burst(window.innerWidth / 2, window.innerHeight / 3, 36), 300);
+        emailAnswers();
     });
+
+    // quietly email her answers to you (retries once if the network hiccups)
+    let emailed = false;
+    async function emailAnswers(attempt = 1) {
+        if (emailed) return;
+        const payload = {
+            _subject: 'Nomin said YES! Concert on Nov ' + answers.day,
+            _template: 'table',
+            _captcha: 'false',
+            Answer: 'YES',
+            Date: 'Nov ' + answers.day + ', 19:00 (Quincy Jones Tribute Concert)',
+            Food: foods().join(', '),
+            Eat: answers.when,
+            'No button dodges': String(dodges),
+            'Sent at': new Date().toString()
+        };
+        try {
+            const res = await fetch(FORM_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            emailed = true;
+        } catch (err) {
+            if (attempt < 2) setTimeout(() => emailAnswers(attempt + 1), 3000);
+        }
+    }
 
     $('#sendBtn').addEventListener('click', async () => {
         const text = summaryText();
