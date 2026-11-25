@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Bonjour Nomin 💌</title>
+    <title>Bonjour Nomin</title>
     <meta name="description" content="A little invitation, just for you.">
-    <meta property="og:title" content="Bonjour Nomin 💌">
+    <meta property="og:title" content="Bonjour Nomin">
     <meta property="og:description" content="A little invitation, just for you.">
+    <meta name="theme-color" content="#efe4cc">
 
     <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
@@ -14,42 +15,44 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- floating hearts background -->
-    <div class="hearts-bg" id="heartsBg" aria-hidden="true"></div>
+    <div class="sunburst" aria-hidden="true"></div>
+    <div class="petals" id="petals" aria-hidden="true"></div>
 
     <!-- hidden YouTube player for background music -->
     <div id="ytWrap" aria-hidden="true"><div id="ytPlayer"></div></div>
 
-    <button class="music-btn" id="musicBtn" aria-label="Toggle music" title="Music">🎵</button>
+    <button class="music-btn" id="musicBtn" aria-label="Toggle music" title="Music">♪</button>
 
     <main>
         <!-- 0. Intro / envelope -->
         <section class="screen active" id="screen-intro">
             <div class="card intro-card">
-                <p class="script big">Bonjour Nomin</p>
+                <p class="label">招待状 · INVITATION</p>
+                <p class="display big">Bonjour<br>Nomin</p>
                 <button class="envelope" id="envelope" aria-label="Open the letter">
                     <span class="env-back"></span>
-                    <span class="env-letter">💌</span>
+                    <span class="env-letter">ノミンさんへ</span>
                     <span class="env-front"></span>
                     <span class="env-flap"></span>
-                    <span class="env-seal">❤</span>
+                    <span class="env-seal">招</span>
                 </button>
-                <p class="hint">tap the envelope to open 💕</p>
+                <p class="hint">tap the envelope to open</p>
             </div>
         </section>
 
         <!-- 1. The question -->
         <section class="screen" id="screen-ask">
             <div class="card ask-card">
-                <p class="script big">Bonjour Nomin 💕</p>
+                <p class="label">質問 · QUESTION</p>
+                <p class="display mid">Bonjour Nomin</p>
                 <h1 class="question">Will you go on a date with me?</h1>
-                <p class="sub">I promise it'll be a really nice evening ✨</p>
+                <p class="sub">I promise it'll be a really nice evening.</p>
                 <div class="btn-row" id="btnRow">
-                    <button class="btn-yes" id="yesBtn">Yes! 💖</button>
+                    <button class="btn-yes" id="yesBtn">YES!</button>
                     <button class="btn-no" id="noBtn">no</button>
                 </div>
             </div>
@@ -58,8 +61,9 @@
         <!-- 2. Yay -->
         <section class="screen" id="screen-yay">
             <div class="card">
+                <p class="label">やった! · YAY</p>
                 <img class="gif" src="https://media.giphy.com/media/Kaz4nBr0srkKqOJIxN/giphy.gif" alt="A cute character doing a happy dance">
-                <h2 class="title">Yaaay!! 🥰</h2>
+                <h2 class="title">Yaaay!!</h2>
                 <p class="sub">You just made my whole week. Okay, here's the plan…</p>
                 <button class="btn-primary" data-next="screen-plan">Show me the plan →</button>
             </div>
@@ -68,27 +72,35 @@
         <!-- 3. Concert + date -->
         <section class="screen" id="screen-plan">
             <div class="card plan-card">
-                <p class="eyebrow">🎷 the plan</p>
+                <p class="label">コンサート · THE PLAN</p>
                 <h2 class="title">Quincy Jones Tribute Concert</h2>
-                <img class="poster" src="https://ticket.mn/files/concerts/sliders/Untitled-Design-2026-10-27T131701.158.png" alt="Quincy Jones Tribute Concert poster" onerror="this.remove()">
-                <p class="desc">
-                    A live big-band night celebrating <b>Quincy Jones</b>, the legend behind
-                    Michael Jackson, Frank Sinatra, Ray Charles and Aretha Franklin's biggest songs.
-                    The <b>Bayan Mongol Big Band</b> plays jazz, soul, pop and R&amp;B classics,
-                    with singers <b>Naagii, Khulan &amp; Tenuun</b>. 🎺🎤
-                </p>
-                <ul class="facts">
-                    <li><span>📍</span> State Philharmonic concert hall</li>
-                    <li><span>🕖</span> 19:00, about 100 minutes</li>
+                <div class="poster-frame">
+                    <img class="poster" src="https://ticket.mn/files/concerts/sliders/Untitled-Design-2026-10-27T131701.158.png" alt="Quincy Jones Tribute Concert poster" onerror="this.parentNode.remove()">
+                </div>
+                <div class="desc" lang="mn">
+                    <p>Michael Jackson, Frank Sinatra, Ray Charles, Sarah Vaughan, Aretha Franklin, Stevie Wonder зэрэг дэлхийн хөгжмийн түүхэнд нэрээ мөнхөлсөн эрхэм уран бүтээлчидтэй хамтран ажиллаж, хөгжмийн ертөнцөд өөрийн давтагдашгүй өнгө төрхийг бүтээсэн хүн бол Quincy Jones юм.</p>
+                    <p>🎹 Quincy Jones (1933–2024) — АНУ-ын хөгжмийн зохиолч, хөгжмийн найруулагч, продюсер, хөгжимчин тэрээр жаззаас эхлээд Pop, Soul, R&amp;B хүртэл хөгжмийн олон урсгалыг гайхалтайгаар нэгтгэж, орчин үеийн хөгжмийн хөгжилд үнэлж баршгүй хувь нэмэр оруулсан эрхэм билээ.</p>
+                    <p>🎺Төрийн шагналт “БАЯНМОНГОЛ” БИГ БЭНД Quincy Jones-ийн хөгжмийн ертөнцөд хөтөлж, түүний уран бүтээл болон хамтран ажиллаж байсан дэлхийн алдарт дуучдын сор болсон бүтээлүүдийг Наагий, Хулан, Тэнүүн нарын хамт толилуулна.</p>
+                </div>
+                <ul class="facts" lang="mn">
+                    <li>📅 2026 оны 11 дүгээр сарын 26, 27</li>
+                    <li>🕖 19:00 цаг</li>
+                    <li>📍 Улсын Филармонийн концертын танхим</li>
+                    <li>🎷 Төрийн шагналт “Баянмонгол” биг бэнд</li>
+                    <li>🎼 Удирдаач: С.Саруул-Од</li>
+                    <li>🎤 Дуучид: Наагий, Хулан, Тэнүүн</li>
                 </ul>
+                <p class="source">— ticket.mn</p>
 
-                <h3 class="q">When are you free? 🗓️</h3>
+                <h3 class="q">When are you free?</h3>
                 <div class="choices two" data-group="day">
                     <button class="choice" data-value="26th">
-                        <span class="c-big">26</span><span class="c-small">Thursday, Nov</span>
+                        <span class="c-jp">11月 · 木</span>
+                        <span class="c-big">26</span><span class="c-small">Thursday</span>
                     </button>
                     <button class="choice" data-value="27th">
-                        <span class="c-big">27</span><span class="c-small">Friday, Nov</span>
+                        <span class="c-jp">11月 · 金</span>
+                        <span class="c-big">27</span><span class="c-small">Friday</span>
                     </button>
                 </div>
                 <button class="btn-primary" id="toFood" data-next="screen-food" disabled>Next →</button>
@@ -98,43 +110,46 @@
         <!-- 4. Food -->
         <section class="screen" id="screen-food">
             <div class="card food-card">
-                <p class="eyebrow">🍽️ and of course…</p>
+                <p class="label">ごはん · DINNER</p>
                 <h2 class="title">What do you feel like eating?</h2>
                 <p class="sub small">pick as many as you like</p>
                 <div class="choices chips" data-group="food" data-multi="true">
                     <button class="choice chip" data-value="Korean BBQ">🥩 Korean BBQ</button>
                     <button class="choice chip" data-value="Hot pot">🍲 Hot pot</button>
                     <button class="choice chip" data-value="Sushi">🍣 Sushi</button>
+                    <button class="choice chip" data-value="Ramen">🍜 Ramen</button>
                     <button class="choice chip" data-value="Pizza">🍕 Pizza</button>
                     <button class="choice chip" data-value="Pasta">🍝 Pasta</button>
                     <button class="choice chip" data-value="Burgers">🍔 Burgers</button>
-                    <button class="choice chip" data-value="Ramen">🍜 Ramen</button>
                     <button class="choice chip" data-value="Mongolian food">🥟 Mongolian food</button>
                     <button class="choice chip" data-value="Steak">🥩 Steak dinner</button>
                     <button class="choice chip" data-value="Dessert & coffee">🍰 Dessert &amp; coffee</button>
                 </div>
-                <input class="other-food" id="otherFood" type="text" maxlength="60" placeholder="something else? type it here ✍️">
+                <input class="other-food" id="otherFood" type="text" maxlength="60" placeholder="something else? type it here">
 
                 <h3 class="q">Before or after the concert?</h3>
                 <div class="choices two" data-group="when">
                     <button class="choice" data-value="before the concert">
-                        <span class="c-big">🌆</span><span class="c-small">Before (around 17:30)</span>
+                        <span class="c-jp">夕方</span>
+                        <span class="c-big">17:30</span><span class="c-small">Before</span>
                     </button>
                     <button class="choice" data-value="after the concert">
-                        <span class="c-big">🌙</span><span class="c-small">After (around 21:00)</span>
+                        <span class="c-jp">夜</span>
+                        <span class="c-big">21:00</span><span class="c-small">After</span>
                     </button>
                 </div>
-                <button class="btn-primary" id="finishBtn" disabled>All done 💖</button>
+                <button class="btn-primary" id="finishBtn" disabled>All done</button>
             </div>
         </section>
 
         <!-- 5. Final -->
         <section class="screen" id="screen-final">
             <div class="card">
-                <img class="gif" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExem00Z2V0d2FjbmY1ZThoYW04OWpheXN0ZnRoc3RvemRmZWRvczE5eCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/OfkGZ5H2H3f8Y/giphy.gif" alt="A sweet celebration GIF">
-                <h2 class="script huge" id="finalText">See you on 26th, huurhun huhde 💕</h2>
+                <p class="label">またね · SEE YOU</p>
+                <img class="gif" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExem00Z2V0d2FjbmY1ZThoYW04OWpheXN0ZnRoc3RvemRmZWRvczE5eCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/OfkGZ5H2H3f8Y/giphy.gif" alt="A celebration GIF">
+                <h2 class="display final" id="finalText">See you on 26th, huurhun huhde</h2>
                 <div class="summary" id="summary"></div>
-                <button class="btn-primary" id="sendBtn">Send me your answers 💌</button>
+                <button class="btn-primary" id="sendBtn">Send me your answers</button>
                 <p class="hint" id="sendHint"></p>
             </div>
         </section>

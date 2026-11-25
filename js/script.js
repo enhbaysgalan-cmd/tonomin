@@ -3,6 +3,7 @@
     'use strict';
 
     const SONG_ID = 'NYNfaQb_T3w'; // The Compass - Chamaig anh
+    const SONG_START = 10;         // seconds: start the song at 0:10
     const $ = (s) => document.querySelector(s);
     const $$ = (s) => Array.from(document.querySelectorAll(s));
 
@@ -18,21 +19,26 @@
     }
     $$('[data-next]').forEach((b) => b.addEventListener('click', () => show(b.dataset.next)));
 
-    /* ---------------- floating hearts ---------------- */
-    const heartsBg = $('#heartsBg');
-    const HEARTS = ['💖', '💕', '💗', '💘', '❤️', '🌸', '✨'];
-    function spawnHeart() {
-        const h = document.createElement('span');
-        h.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
-        h.style.left = Math.random() * 100 + 'vw';
-        h.style.fontSize = 12 + Math.random() * 22 + 'px';
-        h.style.animationDuration = 7 + Math.random() * 7 + 's';
-        heartsBg.appendChild(h);
-        setTimeout(() => h.remove(), 15000);
+    /* ---------------- drifting sakura petals ---------------- */
+    const petals = $('#petals');
+    const PETAL_COLORS = ['#e8a79b', '#efc1b4', '#e39587'];
+    function spawnPetal() {
+        const p = document.createElement('span');
+        p.className = 'petal';
+        const size = 7 + Math.random() * 7;
+        p.style.width = size + 'px';
+        p.style.height = size * 0.8 + 'px';
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.background = PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)];
+        p.style.setProperty('--drift', (Math.random() * 160 - 40) + 'px');
+        const dur = 9 + Math.random() * 8;
+        p.style.animationDuration = dur + 's';
+        petals.appendChild(p);
+        setTimeout(() => p.remove(), dur * 1000 + 200);
     }
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 300);
-        setInterval(spawnHeart, 800);
+        for (let i = 0; i < 4; i++) setTimeout(spawnPetal, i * 500);
+        setInterval(spawnPetal, 1400);
     }
 
     /* ---------------- music (YouTube) ---------------- */
@@ -46,13 +52,14 @@
     window.onYouTubeIframeAPIReady = function () {
         player = new YT.Player('ytPlayer', {
             width: 1, height: 1, videoId: SONG_ID,
-            playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: SONG_ID, playsinline: 1, rel: 0 },
+            playerVars: { autoplay: 0, controls: 0, start: SONG_START, playsinline: 1, rel: 0 },
             events: {
                 onReady: () => { playerReady = true; if (wantMusic) startMusic(); },
                 onStateChange: (e) => {
                     const playing = e.data === YT.PlayerState.PLAYING;
                     musicBtn.classList.toggle('playing', playing && !muted);
-                    if (e.data === YT.PlayerState.ENDED) player.playVideo();
+                    // loop back to 0:10, not to the very start
+                    if (e.data === YT.PlayerState.ENDED) { player.seekTo(SONG_START, true); player.playVideo(); }
                 }
             }
         });
@@ -62,7 +69,11 @@
         wantMusic = true;
         musicBtn.classList.add('show');
         if (!playerReady) return;
-        try { player.unMute(); player.setVolume(70); player.playVideo(); } catch (_) {}
+        try {
+            player.unMute(); player.setVolume(70);
+            if ((player.getCurrentTime() || 0) < SONG_START) player.seekTo(SONG_START, true);
+            player.playVideo();
+        } catch (_) {}
     }
 
     musicBtn.addEventListener('click', () => {
@@ -148,11 +159,12 @@
     });
 
     function burst(x, y, n) {
-        const items = ['💖', '💕', '🎉', '✨', '💗', '🌹', '🥰'];
+        const colors = ['#e0442b', '#e9a93b', '#2f7f7a', '#fbf5e6', '#1f2a44'];
         for (let i = 0; i < n; i++) {
             const el = document.createElement('span');
-            el.className = 'burst';
-            el.textContent = items[i % items.length];
+            el.className = 'confetti';
+            el.style.background = colors[i % colors.length];
+            if (i % 3 === 0) el.style.borderRadius = '50%';
             el.style.left = x + 'px';
             el.style.top = y + 'px';
             document.body.appendChild(el);
@@ -199,14 +211,14 @@
 
     /* ---------------- final ---------------- */
     function summaryText() {
-        return 'Nomin said YES! 💖\n' +
+        return 'Nomin said YES!\n' +
             '🎷 Quincy Jones Tribute Concert, Nov ' + answers.day + ' at 19:00\n' +
             '🍽️ Food: ' + foods().join(', ') + '\n' +
             '🕖 Eat: ' + answers.when;
     }
 
     $('#finishBtn').addEventListener('click', () => {
-        $('#finalText').textContent = 'See you on ' + answers.day + ', huurhun huhde 💕';
+        $('#finalText').textContent = 'See you on ' + answers.day + ', huurhun huhde';
         const sum = $('#summary');
         sum.innerHTML = '';
         [['Date', 'Nov ' + answers.day + ', 19:00'], ['Food', foods().join(', ')], ['Eat', answers.when]].forEach(([k, v]) => {
@@ -223,12 +235,12 @@
         const text = summaryText();
         const hint = $('#sendHint');
         if (navigator.share) {
-            try { await navigator.share({ text }); hint.textContent = 'Sent 💌'; return; }
+            try { await navigator.share({ text }); hint.textContent = 'Sent!'; return; }
             catch (err) { if (err && err.name === 'AbortError') return; }
         }
         try {
             await navigator.clipboard.writeText(text);
-            hint.textContent = 'Copied! Paste it to me in a message 💌';
+            hint.textContent = 'Copied! Paste it to me in a message.';
         } catch (_) {
             hint.textContent = text;
         }
