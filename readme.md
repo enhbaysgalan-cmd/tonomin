@@ -1,4 +1,3 @@
-# 💖 Valentine Proposal Website
 
 An interactive, animated Valentine proposal website that allows users to personalize romantic messages, names, and text content to create a beautiful digital surprise for their loved ones.  
 This project works completely offline (locally) and can also be hosted online easily.
